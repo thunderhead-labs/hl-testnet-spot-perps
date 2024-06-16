@@ -27,8 +27,8 @@ This will deploy the `Perpetual` contract which will deploy a USDC token within 
 
 ### Contract Addresses
 
-`Perpetual = 0x8ac4059F12cDf521D94DBd3bfB3981709Dd345cc`  
-`USDC = 0x897415a1C3A1352ae7eF0CC0247a829dD4428Fc2`
+`Perpetual = 0x213f84F9eb781046108996D11B665B5dE9137CA2`  
+`USDC = 0x086C49A2b42bD3eF3F9857C64630f76395F88868`
 
 
 ### Hyperliquid EVM Background information

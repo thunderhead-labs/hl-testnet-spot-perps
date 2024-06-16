@@ -120,4 +120,90 @@ contract MainTest is Test {
         
         require(perp.liquidatePosition(user, 0) == true, "did not liquidate");
     }
+
+    function test_partialPosition() public {
+        uint256[] memory pxs = new uint256[](100);
+        pxs[0] = 1000;
+        vm.prank(oracleOwner);
+            oracle.setValues(block.number, pxs, pxs);
+
+        vm.prank(user);
+            perp.openPosition(1000*10**18, 5000*10**18, true, 0);
+    
+        pxs[0] = 900;
+
+        vm.prank(oracleOwner);
+            oracle.setValues(block.number, pxs, pxs);
+
+        require(perp.getPositionPnl(user, 0) == -500*10**18, "pnl incorrect");
+        
+        vm.startPrank(user);
+            perp.closePosition(2500*10**18, 0);
+        vm.stopPrank();
+
+        Perpetual.GetPosition[] memory positions = perp.getUserPositions(user);
+        console.log('debt',positions[0].debt);
+        require(positions[0].tokenNotional == 2500*10**18, "token notional incorrect");
+        require(positions[0].debt == 2000*10**18, "debt incorrect");
+        require(positions[0].margin == 500*10**18, "margin incorrect");
+        
+    }
+
+
+    function test_partialPositionShort() public {
+        uint256[] memory pxs = new uint256[](100);
+        pxs[0] = 1000;
+        vm.prank(oracleOwner);
+            oracle.setValues(block.number, pxs, pxs);
+
+        vm.prank(user);
+            perp.openPosition(1000*10**18, 5000*10**18, false, 0);
+    
+        pxs[0] = 900;
+
+        vm.prank(oracleOwner);
+            oracle.setValues(block.number, pxs, pxs);
+
+        require(perp.getPositionPnl(user, 0) == 500*10**18, "pnl incorrect");
+        
+        vm.startPrank(user);
+            perp.closePosition(2500*10**18, 0);
+        vm.stopPrank();
+
+        Perpetual.GetPosition[] memory positions = perp.getUserPositions(user);
+        console.log('debt',positions[0].debt);
+        require(positions[0].tokenNotional == 2500*10**18, "token notional incorrect");
+        require(positions[0].debt == 2000*10**18, "debt incorrect");
+        require(positions[0].margin == 500*10**18, "margin incorrect");
+        
+    }
+
+
+    function test_partialPositionShort2() public {
+        uint256[] memory pxs = new uint256[](100);
+        pxs[0] = 1000;
+        vm.prank(oracleOwner);
+            oracle.setValues(block.number, pxs, pxs);
+
+        vm.prank(user);
+            perp.openPosition(1000*10**18, 5000*10**18, false, 0);
+    
+        pxs[0] = 1100;
+
+        vm.prank(oracleOwner);
+            oracle.setValues(block.number, pxs, pxs);
+
+        require(perp.getPositionPnl(user, 0) == -500*10**18, "pnl incorrect");
+        
+        vm.startPrank(user);
+            perp.closePosition(2500*10**18, 0);
+        vm.stopPrank();
+
+        Perpetual.GetPosition[] memory positions = perp.getUserPositions(user);
+        console.log('debt',positions[0].debt);
+        require(positions[0].tokenNotional == 2500*10**18, "token notional incorrect");
+        require(positions[0].debt == 2000*10**18, "debt incorrect");
+        require(positions[0].margin == 500*10**18, "margin incorrect");
+        
+    }
 }

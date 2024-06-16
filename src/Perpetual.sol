@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 import "./SystemOracle.sol";
 import "./USDC.sol";
 
-
+import "forge-std/console.sol";
 contract Perpetual {
 
 
@@ -74,9 +74,7 @@ contract Perpetual {
 
         Position storage position = positions[msg.sender][assetIndex];
 
-        if (position.active) {
-            require(position.isLong == isLong, "position direction mismatch");
-        }
+        require(position.active == false, "position already open");
 
         uint256 tokenNotional = usdNotional * 10**3 / price;
 
@@ -84,6 +82,7 @@ contract Perpetual {
         position.tokenNotional += tokenNotional;
         position.debt += usdNotional - margin;
         position.isLong = isLong;
+        position.active = true;
 
 
         emit PositionOpened(msg.sender, assetIndex, tokenNotional, margin, isLong);
@@ -108,25 +107,46 @@ contract Perpetual {
         return false;
     }
 
-    function closePosition(uint256 tokenNotional, uint256 assetIndex) public returns (uint256) {
+    function closePosition(uint256 tokenNotionalToClose, uint256 assetIndex) public returns (uint256) {
+        Position storage position = positions[msg.sender][assetIndex];
+
+        require(position.active, "position not open");
+        require(tokenNotionalToClose <= position.tokenNotional, "tokenNotional too high");
 
         if (liquidatePosition(msg.sender, assetIndex)) {
             return 0;
         }
 
         int256 pnl = getPositionPnl(msg.sender, assetIndex);
-        users[msg.sender].totalPnl += pnl;
+        int256 partialPnl = pnl * int256(tokenNotionalToClose) / int256(position.tokenNotional);
+        users[msg.sender].totalPnl += partialPnl;
 
-        uint256 margin = positions[msg.sender][assetIndex].margin;
 
-        uint256 amountToTransfer = uint(int(margin) + pnl);
+        uint256 margin = position.margin;
+        uint256 partialMargin = margin * tokenNotionalToClose / position.tokenNotional;
+        uint256 debt = position.debt;
+        uint256 partialDebt = debt * tokenNotionalToClose / position.tokenNotional;
+        uint256 amountToTransfer = uint(int(partialMargin)  + partialPnl);
+
 
         users[msg.sender].totalVolume += amountToTransfer;
+
         usdc.transfer(msg.sender, amountToTransfer);
 
         emit PositionClosed(msg.sender, assetIndex, pnl, amountToTransfer);
 
-        delete positions[msg.sender][assetIndex];
+
+        if (tokenNotionalToClose == position.tokenNotional) {
+            delete positions[msg.sender][assetIndex];
+        } else {
+            console.log(position.margin, partialMargin);
+            position.margin -= partialMargin;
+
+            position.tokenNotional -= tokenNotionalToClose;
+
+            console.log('initial debt', position.debt);
+            position.debt -= partialDebt;
+        }
     } 
 
     function balanceOfNotional(address user, uint256 assetIndex) public view returns (uint256) {
@@ -168,17 +188,15 @@ contract Perpetual {
 
         uint j;
         for (uint i = 0; i < pxs.length; i++) {
-
-            userPositions[j].tokenNotional = positions[user][i].tokenNotional;
-            userPositions[j].margin = positions[user][i].margin;
-            userPositions[j].debt = positions[user][i].debt;
-            userPositions[j].isLong = positions[user][i].isLong;
-            userPositions[j].active = positions[user][i].active;
-            userPositions[j].pnl = getPositionPnl(user, i);
-            userPositions[j].positionValue = getPositionValue(user, i);
-            userPositions[j].assetIndex = i;
-
             if (positions[user][i].active) {
+                userPositions[j].tokenNotional = positions[user][i].tokenNotional;
+                userPositions[j].margin = positions[user][i].margin;
+                userPositions[j].debt = positions[user][i].debt;
+                userPositions[j].isLong = positions[user][i].isLong;
+                userPositions[j].active = positions[user][i].active;
+                userPositions[j].pnl = getPositionPnl(user, i);
+                userPositions[j].positionValue = getPositionValue(user, i);
+                userPositions[j].assetIndex = i;
                 j++;
             }
         }

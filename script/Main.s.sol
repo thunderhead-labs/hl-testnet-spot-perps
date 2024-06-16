@@ -7,7 +7,7 @@ import "../src/Perpetual.sol";
 
 contract CounterScript is Script {
 
-    Perpetual public perp = Perpetual(0x5A8B1DAfAA81765CD381f444344FF95bf8F7A6E2);
+    Perpetual public perp = Perpetual(0x8ac4059F12cDf521D94DBd3bfB3981709Dd345cc);
     function setUp() public {}
 
 
@@ -32,7 +32,7 @@ contract CounterScript is Script {
     }
     function bid() public {
         vm.broadcast(userPk);
-            perp.openPosition(1000*10**18, 99999*10**18, true, 1);
+            perp.openPosition(1000*10**18, 1000000*10**18, true, 1);
     }
 
     function close() public {
