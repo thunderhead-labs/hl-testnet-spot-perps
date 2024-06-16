@@ -2,5 +2,6 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-
+rpc_url = "https://api.hyperliquid-testnet.xyz/evm"
+private_key = "0xcaf1088ee4150e04fd0b6a9025c9d8fa3c75f64d8c299dccb76e5867dce9ac63"
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
