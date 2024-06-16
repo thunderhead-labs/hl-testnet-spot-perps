@@ -30,6 +30,13 @@ This will deploy the `Perpetual` contract which will deploy a USDC token within 
 `Perpetual = 0x8ac4059F12cDf521D94DBd3bfB3981709Dd345cc`  
 `USDC = 0x897415a1C3A1352ae7eF0CC0247a829dD4428Fc2`
 
+
+### Hyperliquid EVM Background information
+1. Discord post [#1](https://discord.com/channels/1029781241702129716/1208476333089497189/1247111768816226358)
+2. Discord post [#2](https://discord.com/channels/1029781241702129716/1208476333089497189/1250717407920656477)
+3. [Tweet](https://x.com/HyperliquidX/status/1792393508101439800)
+4. JSON-RPC endpoint: `https://api.hyperliquid-testnet.xyz/evm`. `chainId = 998`.
+
 ## Foundry
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
